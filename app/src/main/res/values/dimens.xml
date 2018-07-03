@@ -1,0 +1,5 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <!-- 分割线高度 -->
+    <dimen name="line_height">1dp</dimen>
+</resources>

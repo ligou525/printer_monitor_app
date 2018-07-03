@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">PrinterMonitor</string>
+    <string name="title_activity_printer__status">Printer_Status</string>
+    <string name="item_textView_name">printer name</string>>
+</resources>

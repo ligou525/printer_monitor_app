@@ -9,7 +9,8 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:paddingLeft="10dp"
-    android:paddingRight="10dp" >
+    android:paddingRight="10dp"
+    tools:context=".Printer_Status">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,6 +39,8 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
             android:background="@drawable/main_setting_btn_np" />
+            <!--android:src="@drawable/main_setting_btn_np"-->
+            <!--/>-->
 
     </RelativeLayout>
 

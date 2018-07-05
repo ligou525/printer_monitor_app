@@ -34,26 +34,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         listView=findViewById(R.id.listview_main);
         // get connection to message server, must be in background thread
-        try {
-            appSocket = new Socket(s_addr, s_port);
-            Log.i(TAG, "Server connection successful: "+s_addr);
-            bufferedWriter = new BufferedWriter(new OutputStreamWriter(appSocket.getOutputStream()));
-            bufferedReader = new BufferedReader(new InputStreamReader(appSocket.getInputStream()));
-
-            // send initial identification message
-//                            bufferedWriter.write("app\n");
-//                            bufferedWriter.flush();
-            // 想打印机发送获取打印机列表请求
-            bufferedWriter.write("RequestList\n");
-            int numPrinter=Integer.parseInt(bufferedReader.readLine());
-            printerList=new String[numPrinter];
-            for(int i=0;i<numPrinter;i++){
-                printerList[i]=bufferedReader.readLine();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            appSocket = new Socket(s_addr, s_port);
+//            Log.i(TAG, "Server connection successful: "+s_addr);
+//            bufferedWriter = new BufferedWriter(new OutputStreamWriter(appSocket.getOutputStream()));
+//            bufferedReader = new BufferedReader(new InputStreamReader(appSocket.getInputStream()));
+//
+//            // send initial identification message
+////                            bufferedWriter.write("app\n");
+////                            bufferedWriter.flush();
+//            // 想打印机发送获取打印机列表请求
+//            bufferedWriter.write("RequestList\n");
+//            int numPrinter=Integer.parseInt(bufferedReader.readLine());
+//            printerList=new String[numPrinter];
+//            for(int i=0;i<numPrinter;i++){
+//                printerList[i]=bufferedReader.readLine();
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        printerList=new String[]{"printer1","printer2","printer3","printer4"};
 //        listView.setAdapter(new ArrayAdapter<>(this, R.layout.item_view, R.id.lv_name, objects));
         listView.setAdapter(new ArrayAdapter<>(this,R.layout.item_view,R.id.lv_name,printerList));
         listView.setClickable(true);

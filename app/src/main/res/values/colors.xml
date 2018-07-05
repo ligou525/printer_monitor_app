@@ -5,8 +5,10 @@
 
     <!-- 分割线背景色 -->
     <drawable name="line_background">#161823</drawable>
-    <color name="white">#FFFFFF</color>
-    <color name="colorPrimary">#f52307</color>
+
+    <color name="white">#ffffff</color>
+    <color name="colorPrimary">#3F51B5</color>
+
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#f6fcfc</color>
 </resources>

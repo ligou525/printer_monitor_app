@@ -5,18 +5,22 @@
     android:background="@drawable/layout_backgroud"
     android:orientation="vertical" >
 
-    <include layout="@layout/title" />
+    <include
+        layout="@layout/title"
+        android:visibility="visible" />
 
     <ListView
         android:id="@+id/listview_main"
         android:layout_width="match_parent"
+
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="10dp"
         android:background="@color/white"
+
         android:cacheColorHint="@color/white"
-        android:divider="@drawable/line_background"
+        android:divider="@color/colorAccent"
         android:dividerHeight="@dimen/line_height"
         android:paddingBottom="5dp" />
 

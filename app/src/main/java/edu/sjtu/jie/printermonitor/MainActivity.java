@@ -54,8 +54,9 @@ public class MainActivity extends AppCompatActivity {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-        printerList=new String[]{"printer1","printer2","printer3","printer4"};
+
 //        listView.setAdapter(new ArrayAdapter<>(this, R.layout.item_view, R.id.lv_name, objects));
+        printerList=new String[]{"printer1","printer2","printer3","printer4"};
         listView.setAdapter(new ArrayAdapter<>(this,R.layout.item_view,R.id.lv_name,printerList));
         listView.setClickable(true);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

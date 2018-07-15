@@ -20,6 +20,11 @@
             android:name=".Printer_Status"
             android:label="@string/title_activity_printer__status"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".PrinterSettings"
+            android:label="@string/title_activity_printer__setting"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
     </application>
 
 </manifest>

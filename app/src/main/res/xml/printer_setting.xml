@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<!--<ListPreference-->
+		<!--android:defaultValue="1"-->
+		<!--android:entries="@array/printer_list"-->
+		<!--android:entryValues="@array/printer_list"-->
+		<!--android:key="@string/printer_list"-->
+		<!--android:title="打印机列表 -> 选择打印机" />-->
+	<EditTextPreference
+		android:defaultValue="500"
+		android:dialogTitle="请输入时间间隔(0-1000)s"
+		android:key="printer_time_period_preference"
+		android:summary="默认值：30s"
+		android:title="打印机状态更新时间(单位：秒)" />
+
+</PreferenceScreen>
+

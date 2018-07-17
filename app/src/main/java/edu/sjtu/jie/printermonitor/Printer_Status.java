@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.TextView;
 
 public class Printer_Status extends AppCompatActivity {
 
@@ -26,13 +27,17 @@ public class Printer_Status extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+        String printerName = getIntent().getStringExtra("printerName");
+        TextView printerNameView = (TextView) findViewById(R.id.printer_name);
+        printerNameView.setText(printerName);
+
         initLayout();
     }
 
     /*
     初始化layout
     * */
-    public void initLayout(){
+    public void initLayout() {
         findViewById(R.id.image_iat_set).setOnClickListener(new BtnClickListener());
     }
 
@@ -40,7 +45,7 @@ public class Printer_Status extends AppCompatActivity {
     private class BtnClickListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
-            switch (view.getId()){
+            switch (view.getId()) {
                 case R.id.image_iat_set:
                     Intent intents = new Intent(Printer_Status.this, PrinterSettings.class);
                     startActivity(intents);

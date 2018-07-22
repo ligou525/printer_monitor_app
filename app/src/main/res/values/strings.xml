@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">PrinterMonitor</string>
-    <string name="title_activity_printer__status">打印机状态</string>
+    <string name="title_activity_printer__status">打印机列表</string>
     <string name="title_activity_printer__setting">设置</string>
-    <string name="item_textView_name">printer name</string>>
+    <string name="item_textView_name">printer name</string>
+    <string name="title_activity_printer_list">打印机列表</string>>
 </resources>

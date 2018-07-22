@@ -1,13 +1,18 @@
 package edu.sjtu.jie.printermonitor;
 
 import android.content.Intent;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,58 +21,52 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private static String TAG = MainActivity.class.getSimpleName();
-    private Socket appSocket;
-    private String s_addr = "52.53.52.20";
-    private int s_port = 8001;
-    private BufferedWriter bufferedWriter;
-    private BufferedReader bufferedReader;
-    private String[] printerList;
-    private ListView listView;
-//    private
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        listView=findViewById(R.id.listview_main);
-        // get connection to message server, must be in background thread
-//        try {
-//            appSocket = new Socket(s_addr, s_port);
-//            Log.i(TAG, "Server connection successful: "+s_addr);
-//            bufferedWriter = new BufferedWriter(new OutputStreamWriter(appSocket.getOutputStream()));
-//            bufferedReader = new BufferedReader(new InputStreamReader(appSocket.getInputStream()));
-//
-//            // send initial identification message
-////                            bufferedWriter.write("app\n");
-////                            bufferedWriter.flush();
-//            // 想打印机发送获取打印机列表请求
-//            bufferedWriter.write("RequestList\n");
-//            int numPrinter=Integer.parseInt(bufferedReader.readLine());
-//            printerList=new String[numPrinter];
-//            for(int i=0;i<numPrinter;i++){
-//                printerList[i]=bufferedReader.readLine();
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
 
-//        listView.setAdapter(new ArrayAdapter<>(this, R.layout.item_view, R.id.lv_name, objects));
-        printerList=new String[]{"printer1","printer2","printer3","printer4"};
-        listView.setAdapter(new ArrayAdapter<>(this,R.layout.item_view,R.id.lv_name,printerList));
-        listView.setClickable(true);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Object o = listView.getItemAtPosition(position);
-                String printerName=(String)o;//As you are using Default String Adapter
-                Intent statusIntent=new Intent(MainActivity.this,Printer_Status.class);
-                statusIntent.putExtra("printerName",printerName);
-                startActivity(statusIntent);
-            }
-        });
+//        String printerName = getIntent().getStringExtra("printerName");
+//        TextView printerNameView = (TextView) findViewById(R.id.printer_name);
+//        printerNameView.setText(printerName);
+
+        initLayout();
+    }
+
+    /*
+    初始化layout
+    * */
+    public void initLayout() {
+        findViewById(R.id.image_iat_set).setOnClickListener(MainActivity.this);
+        findViewById(R.id.printer_name).setOnClickListener(MainActivity.this);
+    }
+
+
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.image_iat_set:
+                Intent intents = new Intent(MainActivity.this, PrinterSettings.class);
+                startActivity(intents);
+                break;
+            case R.id.printer_name:
+                Intent listIntent=new Intent(MainActivity.this, PrinterListActivity.class);
+                startActivityForResult(listIntent,10);
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==10&&resultCode==9){
+            String printerName=data.getStringExtra("printerName");
+            TextView printerNameView = (TextView) findViewById(R.id.printer_name);
+            printerNameView.setText(printerName);
+        }
     }
 }

@@ -24,9 +24,9 @@ public class PrinterListActivity extends AppCompatActivity {
     private int s_port = 8001;
     private BufferedWriter bufferedWriter;
     private BufferedReader bufferedReader;
-    private String[] printerList;
+    private static String[] printerList;
     private ListView listView;
-    private int isSelected=0;
+    private int isSelected = 0;
     private String selectedPrinterName;
 
     //    private
@@ -47,53 +47,29 @@ public class PrinterListActivity extends AppCompatActivity {
             }
         });
 
-        listView=findViewById(R.id.listview_main);
-        // get connection to message server, must be in background thread
-//        try {
-//            appSocket = new Socket(s_addr, s_port);
-//            Log.i(TAG, "Server connection successful: "+s_addr);
-//            bufferedWriter = new BufferedWriter(new OutputStreamWriter(appSocket.getOutputStream()));
-//            bufferedReader = new BufferedReader(new InputStreamReader(appSocket.getInputStream()));
-//
-//            // send initial identification message
-////                            bufferedWriter.write("app\n");
-////                            bufferedWriter.flush();
-//            // 想打印机发送获取打印机列表请求
-//            bufferedWriter.write("RequestList\n");
-//            int numPrinter=Integer.parseInt(bufferedReader.readLine());
-//            printerList=new String[numPrinter];
-//            for(int i=0;i<numPrinter;i++){
-//                printerList[i]=bufferedReader.readLine();
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        listView = findViewById(R.id.listview_main);
 
-//        listView.setAdapter(new ArrayAdapter<>(this, R.layout.item_view, R.id.lv_name, objects));
-
-        printerList=new String[]{"printer1","printer2","printer3","printer4"};
-        listView.setAdapter(new ArrayAdapter<>(this,R.layout.item_view,R.id.lv_name,printerList));
+        printerList = new String[]{"printer1", "printer2", "printer3", "printer4"};
+        listView.setAdapter(new ArrayAdapter<>(this, R.layout.item_view, R.id.lv_name, printerList));
         listView.setClickable(true);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                isSelected=1;
+                isSelected = 1;
                 Object o = listView.getItemAtPosition(position);
-                selectedPrinterName=(String)o;
+                selectedPrinterName = (String) o;
                 returnToMain();
 
             }
         });
 
 
-
     }
 
-    public void returnToMain(){
-        Intent statusIntent=new Intent(PrinterListActivity.this, MainActivity.class);
-        statusIntent.putExtra("printerName",selectedPrinterName);
-        this.setResult(9,statusIntent);
+    public void returnToMain() {
+        Intent statusIntent = new Intent(PrinterListActivity.this, MainActivity.class);
+        statusIntent.putExtra("printerName", selectedPrinterName);
+        this.setResult(9, statusIntent);
         PrinterListActivity.this.finish();
     }
 

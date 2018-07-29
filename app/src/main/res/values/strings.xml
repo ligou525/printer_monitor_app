@@ -1,7 +1,12 @@
 <resources>
     <string name="app_name">PrinterMonitor</string>
-    <string name="title_activity_printer__status">打印机列表</string>
     <string name="title_activity_printer__setting">设置</string>
     <string name="item_textView_name">printer name</string>
     <string name="title_activity_printer_list">打印机列表</string>>
+
+    <string name="alert">警告</string>>
+    <string name="alert_content">您已选择忽略此次问题！</string>>
+
+    <string name="postive_button">确定</string>
+    <string name="negative_button">取消</string>
 </resources>

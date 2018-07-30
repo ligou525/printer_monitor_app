@@ -15,6 +15,8 @@ import android.widget.ListView;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PrinterListActivity extends AppCompatActivity {
 
@@ -24,7 +26,7 @@ public class PrinterListActivity extends AppCompatActivity {
     private int s_port = 8001;
     private BufferedWriter bufferedWriter;
     private BufferedReader bufferedReader;
-    private static String[] printerList;
+
     private ListView listView;
     private int isSelected = 0;
     private String selectedPrinterName;
@@ -49,7 +51,7 @@ public class PrinterListActivity extends AppCompatActivity {
 
         listView = findViewById(R.id.listview_main);
 
-        printerList = new String[]{"printer1", "printer2", "printer3", "printer4"};
+       ArrayList<String> printerList=getIntent().getStringArrayListExtra("printerList");
         listView.setAdapter(new ArrayAdapter<>(this, R.layout.item_view, R.id.lv_name, printerList));
         listView.setClickable(true);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -71,6 +73,10 @@ public class PrinterListActivity extends AppCompatActivity {
         statusIntent.putExtra("printerName", selectedPrinterName);
         this.setResult(9, statusIntent);
         PrinterListActivity.this.finish();
+    }
+
+    public static void addPrinter(String printerName){
+
     }
 
 }

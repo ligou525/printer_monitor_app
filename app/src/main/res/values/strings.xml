@@ -3,10 +3,13 @@
     <string name="title_activity_printer__setting">设置</string>
     <string name="item_textView_name">printer name</string>
     <string name="title_activity_printer_list">打印机列表</string>>
-
+    <!--继续-->
     <string name="alert">警告</string>>
     <string name="alert_content">您已选择忽略此次问题！</string>>
-
+    <!--切换打印机-->
+    <string name="attention">提示</string>>
+    <string name="switch_printer">收到其他打印机状态信息，即将为您切换打印机</string>>
+    <!--dialog通用-->
     <string name="postive_button">确定</string>
     <string name="negative_button">取消</string>
 </resources>

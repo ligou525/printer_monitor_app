@@ -46,16 +46,14 @@ public class TCPCommunicator {
         return TCPWriterErrors.OK;
     }
 
-    public static TCPWriterErrors writeToSocket(final JSONObject obj, Handler handle, Context context) {
+    public static TCPWriterErrors writeToSocket(final JSONObject msgObj, Handler handle, Context context) {
         UIHandler = handle;
         appContext = context;
         Runnable runnable = new Runnable() {
-
             @Override
             public void run() {
-                // TODO Auto-generated method stub
                 try {
-                    String outMsg = obj.toString();
+                    String outMsg = msgObj.toString();
                     int megLen=outMsg.getBytes().length;
                     out.write(megLen);
                     out.flush();
@@ -64,21 +62,17 @@ public class TCPCommunicator {
                     Log.i("TcpClient", "sent: " + outMsg);
                 } catch (Exception e) {
                     UIHandler.post(new Runnable() {
-
                         @Override
                         public void run() {
-                            // TODO Auto-generated method stub
                             Toast.makeText(appContext, "a problem has occured, the app might not be able to reach the server", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
             }
-
         };
         Thread thread = new Thread(runnable);
         thread.start();
         return TCPWriterErrors.OK;
-
     }
 
     public static void addListener(TCPListener listener) {
@@ -119,14 +113,8 @@ public class TCPCommunicator {
 
 
     public class InitTCPClientTask extends AsyncTask<Void, Void, Void> {
-        public InitTCPClientTask() {
-
-        }
-
         @Override
         protected Void doInBackground(Void... params) {
-            // TODO Auto-generated method stub
-
             try {
                 s = new Socket(getServerHost(), getServerPort());
                 in = s.getInputStream();
@@ -145,19 +133,14 @@ public class TCPCommunicator {
                             listener.onTCPMessageRecieved(buf.toString());
                     }
                 }
-
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             return null;
-
         }
-
     }
-
     public enum TCPWriterErrors {UnknownHostException, IOException, otherProblem, OK}
 }
 

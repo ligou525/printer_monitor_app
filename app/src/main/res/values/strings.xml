@@ -12,4 +12,5 @@
     <!--dialog通用-->
     <string name="postive_button">确定</string>
     <string name="negative_button">取消</string>
+    <string name="periodDialogTitle">更改状态更新间隔</string>
 </resources>

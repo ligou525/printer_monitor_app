@@ -18,6 +18,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.sjtu.jie.TCPCommunication.EnumsAndStatics;
+
 public class PrinterListActivity extends AppCompatActivity {
 
     private static String TAG = MainActivity.class.getSimpleName();
@@ -40,14 +42,14 @@ public class PrinterListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
         listView = findViewById(R.id.listview_main);
 
@@ -61,7 +63,6 @@ public class PrinterListActivity extends AppCompatActivity {
                 Object o = listView.getItemAtPosition(position);
                 selectedPrinterName = (String) o;
                 returnToMain();
-
             }
         });
 
@@ -71,7 +72,7 @@ public class PrinterListActivity extends AppCompatActivity {
     public void returnToMain() {
         Intent statusIntent = new Intent(PrinterListActivity.this, MainActivity.class);
         statusIntent.putExtra("printerName", selectedPrinterName);
-        this.setResult(9, statusIntent);
+        this.setResult(EnumsAndStatics.LIST_RESULT_CODE, statusIntent);
         PrinterListActivity.this.finish();
     }
 

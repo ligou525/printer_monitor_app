@@ -11,19 +11,26 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 
 import edu.sjtu.jie.TCPCommunication.EnumsAndStatics;
 import edu.sjtu.jie.TCPCommunication.TCPCommunicator;
 import edu.sjtu.jie.TCPCommunication.TCPListener;
+import edu.sjtu.jie.util.SettingTextWatcher;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, TCPListener {
@@ -32,7 +39,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TCPCommunicator tcpClient;
     public static String S_ADDR = "106.12.17.74";
     public static int S_PORT = 8001;
-    private static ArrayList<String> printerList=new ArrayList<>();
+    private static ArrayList<String> printerList = new ArrayList<>();
+    private int updatePeriod = 30;
 
 
     //声明组件
@@ -51,9 +59,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ConnectToServer();
     }
 
-    public void initPrinterList(){
-        String [] printerNameList = new String[]{"printer1", "printer2", "printer3", "printer4"};
-        for(String printer:printerNameList){
+    public void initPrinterList() {
+        String[] printerNameList = new String[]{"printer1", "printer2", "printer3", "printer4"};
+        for (String printer : printerNameList) {
             printerList.add(printer);
         }
     }
@@ -84,13 +92,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.image_iat_set:
-                Intent intents = new Intent(MainActivity.this, PrinterSettings.class);
-                startActivity(intents);
+                Intent periodInetent = new Intent(MainActivity.this, PrinterSettings.class);
+                periodInetent.putExtra("updatePeriod", updatePeriod);
+                Toast.makeText(this, "intent - 最新period值：" + String.valueOf(updatePeriod), Toast.LENGTH_LONG).show();
+                startActivityForResult(periodInetent, EnumsAndStatics.PERIOD_REQUEST_CODE);
+//                setUpdatePeriodDialog(view);
                 break;
             case R.id.printer_name:
                 Intent listIntent = new Intent(MainActivity.this, PrinterListActivity.class);
-                listIntent.putStringArrayListExtra("printerList",printerList);
-                startActivityForResult(listIntent, 10);
+                listIntent.putStringArrayListExtra("printerList", printerList);
+                startActivityForResult(listIntent, EnumsAndStatics.LIST_REQUEST_CODE);
                 break;
             case R.id.iat_continue:
                 showAlertDialog();
@@ -121,9 +132,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 10 && resultCode == 9) {
+        if (requestCode == EnumsAndStatics.LIST_REQUEST_CODE && resultCode == EnumsAndStatics.LIST_RESULT_CODE) {
             printerName = data.getStringExtra("printerName");
             printerNameView.setText(printerName);
+        } else if (requestCode == EnumsAndStatics.PERIOD_REQUEST_CODE && resultCode == EnumsAndStatics.PERIOD_RESULT_CODE) {
+            Toast.makeText(this, "main - 最新period值：" + String.valueOf(updatePeriod), Toast.LENGTH_LONG).show();
+            updatePeriod = data.getIntExtra("updateperiod", 30);
         }
     }
 
@@ -146,11 +160,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Bitmap bmp = BitmapFactory.decodeByteArray(statusImg, 0, statusImg.length);
                             statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
                                     statusImageView.getHeight(), false));
-                        }else {
+                        } else {
                             showAlertDialog();
                         }
 
-                    }else {
+                    } else {
                         Bitmap bmp = BitmapFactory.decodeByteArray(statusImg, 0, statusImg.length);
                         statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
                                 statusImageView.getHeight(), false));
@@ -158,19 +172,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     statusEditText.setText(statusText);
                     break;
                 case Message_Update_List:
-                    String printerList=msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    String[] printers=printerList.split(":");
+                    String printerList = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
+                    String[] printers = printerList.split(":");
                     addPrinter(printers);
                     break;
                 case Message_Update_Period:
 
                 case Message_Stop:
-                    String rcvdMsgStop=msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    statusEditText.append("\n\n处理结果："+rcvdMsgStop);
+                    String rcvdMsgStop = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
+                    statusEditText.append("\n\n处理结果：" + rcvdMsgStop);
                     break;
                 case Message_Shutdown:
-                    String rcvdMsgOff=msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    statusEditText.append("\n\n处理结果："+rcvdMsgOff);
+                    String rcvdMsgOff = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
+                    statusEditText.append("\n\n处理结果：" + rcvdMsgOff);
                     break;
             }
 
@@ -185,13 +199,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public void addPrinter(String[] printers){
-        for(String printer:printers){
-            if(!printerList.contains(printer)){
+    public void addPrinter(String[] printers) {
+        for (String printer : printers) {
+            if (!printerList.contains(printer)) {
                 printerList.add(printer);
             }
         }
     }
+
     private void showAlertDialog() {
         builder = new AlertDialog.Builder(this);
         builder.setIcon(R.drawable.alert_icon);
@@ -248,4 +263,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK);
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.BLACK);
     }
+
+//    private void setUpdatePeriodDialog(View view) {
+//        builder=new AlertDialog.Builder(this);
+//        builder.setIcon(R.mipmap.ic_launcher);
+//        builder.setTitle(R.string.periodDialogTitle);
+//
+//        LinearLayout loginDialog= (LinearLayout) getLayoutInflater().inflate(R.layout.set_update_period_view,null);
+//        builder.setView(loginDialog);
+//
+//        builder.setCancelable(false);
+//        AlertDialog dialog=builder.create();
+//
+//        final EditText periodEditText=(EditText) findViewById(R.id.period_editText);
+//        Button confirmButthon=(Button) findViewById(R.id.period_comfirm);
+//        Button cancelButthon=(Button) findViewById(R.id.period_cancel);
+//        periodEditText.addTextChangedListener(new SettingTextWatcher(MainActivity.this, periodEditText,0,1000));
+//        confirmButthon.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if(periodEditText.getText().equals("")){
+//                    Toast.makeText(MainActivity.this,"时间间隔不能为空，请重新输入！",Toast.LENGTH_LONG);
+//                }else{
+//                    if(updatePeriod!=Integer.parseInt(periodEditText.getText().toString())) {
+//                        updatePeriod = Integer.parseInt(periodEditText.getText().toString());
+//                        TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Message_Update_Period.toString(),
+//                                String.valueOf(updatePeriod)), UIHandler, MainActivity.this);
+//                    }
+//                }
+//            }
+//        });
+//
+//        dialog.show();
+//    }
 }

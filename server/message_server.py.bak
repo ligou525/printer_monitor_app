@@ -1,0 +1,166 @@
+import sys
+import socketserver
+import socket
+import threading
+import time
+from time import strftime
+
+
+class TCPHandler(socketserver.StreamRequestHandler):
+    """
+    The request handler class for our server.
+
+    It is instantiated once per connection to the server, and must
+    override the handle() method to implement communication to the
+    client.
+    """
+
+    def handle(self):
+        # self.request is the TCP socket connected to the client
+        try:
+            client_name = self.request.recv(1024).decode().strip()
+        except Exception as e:
+            print("{0} - Trying connection failed -".format(strftime('%c')),
+                  self.request.getpeername())
+            raise e
+        if client_name.startswith('printer') or client_name.startswith( 'app'):
+            self.server.add_client(self.request, client_name)
+        else:
+            return
+
+        while 1:
+            if not self.server.exists_printer_and_app():
+                print(
+                    "{0} - Waiting for the other side...".format(
+                        strftime('%c')),
+                    end='\r')
+                time.sleep(.5)
+                sys.stdout.write('\033[K')
+                continue
+
+            try:
+                data = self.request.recv(1024).decode().rstrip()
+            except Exception as e:
+                print("{0} - Receiving data failed -".format(strftime('%c')),
+                      self.request.getpeername())
+                raise e
+
+            if not data:  # prevent dead loop when app exits (sock disconnects)
+                break
+
+            print('\n{0}\t<== {1}\t\t{2}'.format(
+                strftime('%c'), client_name, data))
+            
+            flds_data = data.split('^F')
+            receiver = flds_data[-1]
+            data_to_handle = flds_data[0]
+
+            # handle data according to its content
+            if data_to_handle.startswith('RequestList'):
+                response = 'RequestList:{0}'.format(''.join(self.server.name2client))
+            else:
+                response = data
+            self.server.send(client_name, receiver, response)
+
+        self.server.remove_client(client_name)
+
+
+class Server(socketserver.ThreadingTCPServer):
+    def __init__(self, *args, **kwargs):
+        super(Server, self).__init__(*args, **kwargs)
+        print("{0} - Server started".format(strftime('%c')))
+        self.apps = {}
+        self.printers = {}
+        self.lock = threading.Lock()
+
+    def print_clients(self):
+        print("{0} - Connected apps -".format(strftime('%c')), list(self.apps))
+        print("{0} - Connected printers -".format(strftime('%c')), list(self.printers))
+
+    def exists_printer_and_app(self):
+        name_str = '{0}'.format(''.join(self.name2client))
+        if 'app' in name_str and 'printer' in name_str:
+            return True
+        return False
+
+    def add_client(self, client, name):
+        with self.lock:
+            if name.startswith('app'):
+                self.apps[name] = client
+            elif name.startswith('printer'):
+                self.printers[name] = client
+            
+            print("\n{0} - Connected - {1} from {2}".format(
+                strftime('%c'), name, client.getpeername()))
+            self.print_clients()
+
+    def remove_client(self, name):
+        with self.lock:
+            if name.startswith('app'):
+                client =  self.apps[name]
+                del self.apps[name]
+            elif name.startswith('printer'):
+                client = self.printers[name]
+                del self.printers[name]
+
+            print("\n{0} - Disconnected - {1} from {2}".format(
+                strftime('%c'), name, client.getpeername()))
+            self.print_clients()
+
+    def send(self, sender, receiver, data):
+        with self.lock:
+            if receiver.startswith('app'):
+                self.apps[receiver].sendall(data)
+            elif receiver.startswith('printer'):
+                self.printers[receiver].sendall(data)
+
+            print('\n{0}\t==> {1}\t\t{2}'.format(
+                strftime('%c'), receiver,
+                data.decode().strip()))
+
+
+def message_builder(name, data, printer):
+    return {'messageType': name, 
+            'messageContent': data,
+            'printerName': printer}
+
+
+def _send(socket, data):
+    try:
+        serialized = json.dumps(data)
+    except (TypeError, ValueError), e:
+        raise Exception('You can only send JSON-serializable data')
+    # send the length of the serialized data first
+    socket.send('%d\n' % len(serialized))
+    # send the serialized data
+    socket.sendall(serialized)
+
+
+def _recv(socket):
+    # read the length of the data, letter by letter until we reach EOL
+    length_str = ''
+    char = socket.recv(1)
+    while char != '\n':
+        length_str += char
+        char = socket.recv(1)
+    total = int(length_str)
+    # use a memoryview to receive the data chunk by chunk efficiently
+    view = memoryview(bytearray(total))
+    next_offset = 0
+    while total - next_offset > 0:
+        recv_size = socket.recv_into(view[next_offset:], total - next_offset)
+        next_offset += recv_size
+    try:
+        deserialized = json.loads(view.tobytes())
+    except (TypeError, ValueError), e:
+        raise Exception('Data received was not in JSON format')
+    return deserialized
+
+
+def main():
+    vcs_server = Server((socket.gethostname(), 8010), TCPHandler)
+    vcs_server.serve_forever()
+
+
+if __name__ == '__main__':
+    main()

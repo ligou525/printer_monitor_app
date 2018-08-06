@@ -23,14 +23,8 @@ import edu.sjtu.jie.TCPCommunication.EnumsAndStatics;
 public class PrinterListActivity extends AppCompatActivity {
 
     private static String TAG = MainActivity.class.getSimpleName();
-    private Socket appSocket;
-    private String s_addr = "52.53.52.20";
-    private int s_port = 8001;
-    private BufferedWriter bufferedWriter;
-    private BufferedReader bufferedReader;
-
     private ListView listView;
-    private int isSelected = 0;
+
     private String selectedPrinterName;
 
     //    private
@@ -59,7 +53,6 @@ public class PrinterListActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                isSelected = 1;
                 Object o = listView.getItemAtPosition(position);
                 selectedPrinterName = (String) o;
                 returnToMain();

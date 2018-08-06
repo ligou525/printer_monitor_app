@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -50,6 +51,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initLayout();
         initPrinterList();
         ConnectToServer();
+        Log.i("msgSending","------------------online-----------------");
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Online.toString(),
                 "I am online","server"), UIHandler, this);
     }
@@ -59,6 +66,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (String printer : printerNameList) {
             printerList.add(printer);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        TCPCommunicator.closeStreams();
     }
 
     private void ConnectToServer() {
@@ -116,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             jsonMesg.put(EnumsAndStatics.MESSAGE_SENDER, "app");
             jsonMesg.put(EnumsAndStatics.MESSAGE_RECEIVER, recver);
-            jsonMesg.put(EnumsAndStatics.MESSAGE_TYPE_FOR_JSON, EnumsAndStatics.getMessageTypeByString(messageType));
+            jsonMesg.put(EnumsAndStatics.MESSAGE_TYPE_FOR_JSON, messageType);
             jsonMesg.put(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON, messageContent);
         } catch (JSONException e) {
             e.printStackTrace();

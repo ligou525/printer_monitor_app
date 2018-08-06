@@ -1,5 +1,7 @@
 package edu.sjtu.jie.TCPCommunication;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,8 +23,8 @@ public class TCPCommunicator {
     private static String serverHost;
     private static int serverPort;
     private static List<TCPListener> allListeners;
-    private static OutputStream out;
-    private static InputStream in;
+    private static DataOutputStream out;
+    private static DataInputStream in;
     private static Socket s;
     private static Handler UIHandler;
     private static Context appContext;
@@ -39,6 +41,7 @@ public class TCPCommunicator {
     }
 
     public TCPWriterErrors init(String host, int port) {
+        Log.i("initialize Socket","------------------initialting-------------------");
         setServerHost(host);
         setServerPort(port);
         InitTCPClientTask task = new InitTCPClientTask();
@@ -55,7 +58,7 @@ public class TCPCommunicator {
                 try {
                     String outMsg = msgObj.toString();
                     int megLen=outMsg.getBytes().length;
-                    out.write(megLen);
+                    out.write((String.valueOf(megLen)+"\n").getBytes());
                     out.flush();
                     out.write(outMsg.getBytes());
                     out.flush();
@@ -117,21 +120,23 @@ public class TCPCommunicator {
         protected Void doInBackground(Void... params) {
             try {
                 s = new Socket(getServerHost(), getServerPort());
-                Log.d("socket","ip:"+getServerHost()+", port: "+getServerPort()+", socket: "+s);
-                in = s.getInputStream();
-                out = s.getOutputStream();
+                Log.i("initiate socket","ip:"+getServerHost()+", port: "+getServerPort()+", socket: "+s+"------------------");
+                in = new DataInputStream(s.getInputStream());
+                out = new DataOutputStream(s.getOutputStream());
                 for (TCPListener listener : allListeners)
                     listener.onTCPConnectionStatusChanged(true);
                 while (true) {
                     byte[] bufLen = new byte[1024];
                     in.read(bufLen);
-                    int byteLen = Integer.parseInt(bufLen.toString());
+                    String lenMsg=new String(bufLen);
+                    int byteLen=Integer.parseInt(lenMsg.substring(0,lenMsg.indexOf("\n")));
+                    Log.i("byteLen","~~~~~~~~~~~~~~~~~~~~~~~~~~~~"+String.valueOf(byteLen));
                     byte[] buf = new byte[byteLen];
                     int len = in.read(buf);
                     if (len != -1 && len == byteLen) {
-                        Log.i("TcpClient", "received: " + buf.toString());
+                        Log.i("TcpClient", "received: " + new String(buf));
                         for (TCPListener listener : allListeners)
-                            listener.onTCPMessageRecieved(buf.toString());
+                            listener.onTCPMessageRecieved(new String(buf));
                     }
                 }
             } catch (UnknownHostException e) {

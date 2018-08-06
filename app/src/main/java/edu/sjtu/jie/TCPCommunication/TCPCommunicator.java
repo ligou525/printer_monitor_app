@@ -64,7 +64,7 @@ public class TCPCommunicator {
                     UIHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(appContext, "a problem has occured, the app might not be able to reach the server", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(appContext, "a problem has occurred, the app might not be able to reach the server", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String printerName;
     private TCPCommunicator tcpClient;
     public static String S_ADDR = "106.12.17.74";
-    public static int S_PORT = 8001;
+    public static int S_PORT = 8010;
     private static ArrayList<String> printerList = new ArrayList<>();
     private int updatePeriod = 30;
 

@@ -117,6 +117,7 @@ public class TCPCommunicator {
         protected Void doInBackground(Void... params) {
             try {
                 s = new Socket(getServerHost(), getServerPort());
+                Log.d("socket","ip:"+getServerHost()+", port: "+getServerPort()+", socket: "+s);
                 in = s.getInputStream();
                 out = s.getOutputStream();
                 for (TCPListener listener : allListeners)

@@ -1,6 +1,5 @@
 package edu.sjtu.jie.printermonitor;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -11,13 +10,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,12 +20,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.regex.Matcher;
 
 import edu.sjtu.jie.TCPCommunication.EnumsAndStatics;
 import edu.sjtu.jie.TCPCommunication.TCPCommunicator;
 import edu.sjtu.jie.TCPCommunication.TCPListener;
-import edu.sjtu.jie.util.SettingTextWatcher;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, TCPListener {
@@ -38,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String printerName;
     private TCPCommunicator tcpClient;
     public static String S_ADDR = "106.12.17.74";
-    public static int S_PORT = 8001;
+    public static int S_PORT = 8010;
     private static ArrayList<String> printerList = new ArrayList<>();
     private int updatePeriod = 30;
 
@@ -57,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initLayout();
         initPrinterList();
         ConnectToServer();
+        TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Online.toString(),
+                "I am online","server"), UIHandler, this);
     }
 
     public void initPrinterList() {
@@ -94,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.image_iat_set:
                 Intent periodInetent = new Intent(MainActivity.this, PrinterSettings.class);
                 periodInetent.putExtra("updatePeriod", updatePeriod);
-                Toast.makeText(this, "intent - 最新period值：" + String.valueOf(updatePeriod), Toast.LENGTH_LONG).show();
                 startActivityForResult(periodInetent, EnumsAndStatics.PERIOD_REQUEST_CODE);
 //                setUpdatePeriodDialog(view);
                 break;
@@ -107,20 +101,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 showAlertDialog();
                 break;
             case R.id.iat_stop:
-                TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Message_Stop.toString(),
-                        "Stop printing"), UIHandler, this);
+                TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Stop.toString(),
+                        "Stop printing",printerName), UIHandler, this);
                 break;
             case R.id.iat_off:
-                TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Message_Shutdown.toString(),
-                        "Shutdown the printer"), UIHandler, this);
+                TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Shutdown.toString(),
+                        "Shutdown the printer",printerName), UIHandler, this);
                 break;
         }
     }
 
-    public JSONObject messageBuilder(String messageType, String messageContent) {
+    public JSONObject messageBuilder(String messageType, String messageContent, String recver) {
         JSONObject jsonMesg = new JSONObject();
         try {
-            jsonMesg.put(EnumsAndStatics.MESSAGE_PRINTER_NAME_FOR_JSON, printerName);
+            jsonMesg.put(EnumsAndStatics.MESSAGE_SENDER, "app");
+            jsonMesg.put(EnumsAndStatics.MESSAGE_RECEIVER, recver);
             jsonMesg.put(EnumsAndStatics.MESSAGE_TYPE_FOR_JSON, EnumsAndStatics.getMessageTypeByString(messageType));
             jsonMesg.put(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON, messageContent);
         } catch (JSONException e) {
@@ -136,8 +131,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             printerName = data.getStringExtra("printerName");
             printerNameView.setText(printerName);
         } else if (requestCode == EnumsAndStatics.PERIOD_REQUEST_CODE && resultCode == EnumsAndStatics.PERIOD_RESULT_CODE) {
-            Toast.makeText(this, "main - 最新period值：" + String.valueOf(updatePeriod), Toast.LENGTH_LONG).show();
             updatePeriod = data.getIntExtra("updateperiod", 30);
+            Toast.makeText(this, "main - 最新period值：" + String.valueOf(updatePeriod), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -146,11 +141,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         JSONObject msgObj;
         try {
             msgObj = new JSONObject(message);
-            String rcvdPrinterName = msgObj.getString(EnumsAndStatics.MESSAGE_PRINTER_NAME_FOR_JSON);
+            String rcvdPrinterName = msgObj.getString(EnumsAndStatics.MESSAGE_RECEIVER);
             EnumsAndStatics.MessageTypes msgType = EnumsAndStatics.getMessageTypeByString(msgObj.
                     getString(EnumsAndStatics.MESSAGE_TYPE_FOR_JSON));
             switch (msgType) {
-                case Message_Printer_Status:
+                case PrinterStatus:
                     JSONObject msgContent = msgObj.getJSONObject(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     byte[] statusImg = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_IMG_FOR_JSON).getBytes();
                     String statusText = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_TEXT_FOR_JSON);
@@ -171,18 +166,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     statusEditText.setText(statusText);
                     break;
-                case Message_Update_List:
+                case UpdateList:
                     String printerList = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     String[] printers = printerList.split(":");
                     addPrinter(printers);
                     break;
-                case Message_Update_Period:
+                case UpdatePeriod:
 
-                case Message_Stop:
+                case Stop:
                     String rcvdMsgStop = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     statusEditText.append("\n\n处理结果：" + rcvdMsgStop);
                     break;
-                case Message_Shutdown:
+                case Shutdown:
                     String rcvdMsgOff = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     statusEditText.append("\n\n处理结果：" + rcvdMsgOff);
                     break;
@@ -287,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                }else{
 //                    if(updatePeriod!=Integer.parseInt(periodEditText.getText().toString())) {
 //                        updatePeriod = Integer.parseInt(periodEditText.getText().toString());
-//                        TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Message_Update_Period.toString(),
+//                        TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.MessageUpdatePeriod.toString(),
 //                                String.valueOf(updatePeriod)), UIHandler, MainActivity.this);
 //                    }
 //                }

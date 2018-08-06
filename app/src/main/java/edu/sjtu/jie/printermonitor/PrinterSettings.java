@@ -6,6 +6,7 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
+import android.util.Log;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -36,10 +37,13 @@ public class PrinterSettings extends PreferenceActivity implements OnPreferenceC
 
         timePeriodPreference.getEditText().addTextChangedListener(new SettingTextWatcher(PrinterSettings.this, timePeriodPreference, 0, 1000));
 
+
         timePeriodPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                int newPeriodValue = (int) 0;
+                int newPeriodValue = Integer.parseInt(timePeriodPreference.getText());
+                Log.d("onPreferenceChange","newPeriod: "+newPeriodValue);
+                timePeriodPreference.setSummary("当前更新时间间隔： " + newPeriodValue + "s");
                 returnToMain(newPeriodValue);
                 return true;
             }
@@ -48,7 +52,7 @@ public class PrinterSettings extends PreferenceActivity implements OnPreferenceC
     }
 
     public void returnToMain(int newPeriodValue) {
-        Toast.makeText(this,"setting - 最新period值："+String.valueOf(newPeriodValue),Toast.LENGTH_LONG).show();
+//        Toast.makeText(this,"setting - 最新period值："+String.valueOf(newPeriodValue),Toast.LENGTH_LONG).show();
         Intent periodIntent = new Intent(PrinterSettings.this, MainActivity.class);
         periodIntent.putExtra("updateperiod", newPeriodValue);
         this.setResult(EnumsAndStatics.PERIOD_RESULT_CODE, periodIntent);

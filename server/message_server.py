@@ -4,7 +4,7 @@ import socket
 import threading
 import time
 from time import strftime
-
+from tools import send, recv, message_builder, server_addr
 
 class TCPHandler(socketserver.StreamRequestHandler):
     """
@@ -17,27 +17,31 @@ class TCPHandler(socketserver.StreamRequestHandler):
 
     def handle(self):
         try:
-            msg = _recv(self.request)
+            msg = recv(self.request)
         except:
-            pass
-        
-        if msg['msgType'] == 'online':
+            return 
+
+        if msg['messageType'] == 'Online':
             name = msg['sender']
             self.server.add_client(name, self.request)
-            response = message_builder('server', name, 'UpdatePrinterList', self.server.printers)
-            self.server.send(response)
+            if name.startswith('app'):
+                response = message_builder('server', name, 'UpdatePrinterList', self.server.printers)
+                self.server.send_mgs(response)
         
         while 1:
             try:
-                msg = _recv(self.request)
+                msg = recv(self.request)
+                print("{0} - recevied message".format(strftime('%c')))
             except:
                 break
                     
             if msg['recver'] == 'server':
-                pass
+                if msg['messageType'] == 'Test':
+                    response = message_builder('server', name, 'Test', 'test - {0}'.format(strftime('%c')))
+                    self.server.send_msg(response)
 
             else:
-                self.server.send(msg)
+                self.server.send_msg(msg)
 
         self.server.remove_client(name)
 
@@ -79,56 +83,18 @@ class Server(socketserver.ThreadingTCPServer):
                 strftime('%c'), name, client.getpeername()))
             self.print_clients()
     
-    def send(self, msg):
+    def send_msg(self, msg):
         with self.lock:
             recver = msg['recver'] 
             if recver.startswith('app') and recver in self.apps:
-                _send(self.apps[recver], msg)
+                send(self.apps[recver], msg)
             elif recver.startswith('printer') and recver in self.printers:
-                _send(self.printers[recver], msg)
+                send(self.printers[recver], msg)
 
-
-def message_builder(sender, recver, msg_type, msg_data):
-    return {'sender': sender, 
-            'recver': recver,
-            'msgType': msg_type,
-            'msgData': msg_data}
-
-
-def _send(socket, data):
-    try:
-        serialized = json.dumps(data).encode()
-    except (TypeError, ValueError) as e:
-        raise Exception('You can only send JSON-serializable data')
-    # send the length of the serialized data first
-    socket.send('{0}\n'.format(len(serialized)).encode())
-    # send the serialized data
-    socket.sendall(serialized)
-
-
-def _recv(socket):
-    # read the length of the data, letter by letter until we reach EOL
-    length_str = ''
-    char = socket.recv(1)
-    while char != b'\n':
-        length_str += char
-        char = socket.recv(1)
-    total = int(length_str)
-    # use a memoryview to receive the data chunk by chunk efficiently
-    view = memoryview(bytearray(total))
-    next_offset = 0
-    while total - next_offset > 0:
-        recv_size = socket.recv_into(view[next_offset:], total - next_offset)
-        next_offset += recv_size
-    try:
-        deserialized = json.loads(view.tobytes())
-    except (TypeError, ValueError) as e:
-        raise Exception('Data received was not in JSON format')
-    return deserialized
 
 
 def main():
-    vcs_server = Server((socket.gethostname(), 8010), TCPHandler)
+    vcs_server = Server((socket.gethostname(), server_addr[1]), TCPHandler)
     vcs_server.serve_forever()
 
 

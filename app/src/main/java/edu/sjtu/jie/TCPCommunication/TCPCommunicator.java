@@ -41,7 +41,6 @@ public class TCPCommunicator {
     }
 
     public TCPWriterErrors init(String host, int port) {
-        Log.i("initialize Socket","------------------initialting-------------------");
         setServerHost(host);
         setServerPort(port);
         InitTCPClientTask task = new InitTCPClientTask();
@@ -129,8 +128,9 @@ public class TCPCommunicator {
                     byte[] bufLen = new byte[1024];
                     in.read(bufLen);
                     String lenMsg=new String(bufLen);
+                    Log.i("lenMsg","~~~~~~~~~~~~~~~~~~~~~~~~~~~~"+lenMsg);
                     int byteLen=Integer.parseInt(lenMsg.substring(0,lenMsg.indexOf("\n")));
-                    Log.i("byteLen","~~~~~~~~~~~~~~~~~~~~~~~~~~~~"+String.valueOf(byteLen));
+                    Log.i("byteLen","------------------"+String.valueOf(byteLen));
                     byte[] buf = new byte[byteLen];
                     int len = in.read(buf);
                     if (len != -1 && len == byteLen) {

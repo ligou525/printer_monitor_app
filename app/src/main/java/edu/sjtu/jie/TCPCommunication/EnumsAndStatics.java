@@ -14,14 +14,15 @@ public class EnumsAndStatics {
 
 
     // 打印机状态信息标签名
-    public static final String MESSAGE_STATUS_IMG_FOR_JSON = "messageStatusImg";
-    public static final String MESSAGE_STATUS_TEXT_FOR_JSON = "messageStatusText";
+    public static final String MESSAGE_STATUS_IMG_FOR_JSON = "statusImg";
+    public static final String MESSAGE_STATUS_TEXT_FOR_JSON = "statusText";
+    public static final String MESSAGE_STATUS_CODE = "statusCode";
 
     // intent 间状态码
-    public static final int LIST_REQUEST_CODE=10;
-    public static final int LIST_RESULT_CODE=1;
-    public static final int PERIOD_REQUEST_CODE=11;
-    public static final int PERIOD_RESULT_CODE=2;
+    public static final int LIST_REQUEST_CODE = 10;
+    public static final int LIST_RESULT_CODE = 1;
+    public static final int PERIOD_REQUEST_CODE = 11;
+    public static final int PERIOD_RESULT_CODE = 2;
 
     public static MessageTypes getMessageTypeByString(String messageInString) {
         if (messageInString.equals(MessageTypes.PrinterStatus.toString()))

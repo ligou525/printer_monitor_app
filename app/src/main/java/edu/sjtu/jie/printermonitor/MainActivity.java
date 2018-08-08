@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -17,9 +18,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import edu.sjtu.jie.TCPCommunication.EnumsAndStatics;
@@ -35,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static int S_PORT = 8010;
     private static ArrayList<String> printerList = new ArrayList<>();
     private int updatePeriod = 30;
-
+    private boolean isFirstList = true;
 
     //声明组件
     private AlertDialog.Builder builder;
@@ -49,16 +52,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initLayout();
-        initPrinterList();
+//        initPrinterList();
         ConnectToServer();
-        Log.i("msgSending","------------------online-----------------");
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Online.toString(),
-                "I am online","server"), UIHandler, this);
+                "I am online", "server"), UIHandler, this);
     }
 
     public void initPrinterList() {
@@ -115,11 +117,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.iat_stop:
                 TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Stop.toString(),
-                        "Stop printing",printerName), UIHandler, this);
+                        "Stop printing", printerName), UIHandler, this);
                 break;
             case R.id.iat_off:
                 TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Shutdown.toString(),
-                        "Shutdown the printer",printerName), UIHandler, this);
+                        "Shutdown the printer", printerName), UIHandler, this);
                 break;
         }
     }
@@ -154,18 +156,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         JSONObject msgObj;
         try {
             msgObj = new JSONObject(message);
-            String rcvdPrinterName = msgObj.getString(EnumsAndStatics.MESSAGE_RECEIVER);
+            String printer = msgObj.getString(EnumsAndStatics.MESSAGE_SENDER);
             EnumsAndStatics.MessageTypes msgType = EnumsAndStatics.getMessageTypeByString(msgObj.
                     getString(EnumsAndStatics.MESSAGE_TYPE_FOR_JSON));
             switch (msgType) {
                 case PrinterStatus:
                     JSONObject msgContent = msgObj.getJSONObject(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    byte[] statusImg = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_IMG_FOR_JSON).getBytes();
+                    String statusImg = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_IMG_FOR_JSON);
                     String statusText = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_TEXT_FOR_JSON);
-                    if (!rcvdPrinterName.equals(printerName)) {
-                        showPrinterChangedAlertDialog(rcvdPrinterName);
-                        if (rcvdPrinterName.equals(printerName)) {
-                            Bitmap bmp = BitmapFactory.decodeByteArray(statusImg, 0, statusImg.length);
+                    int statusCode = msgContent.getInt(EnumsAndStatics.MESSAGE_STATUS_CODE);
+                    // 图像预处理
+                    byte[] raw_data = Base64.decode(statusImg, Base64.DEFAULT);
+                    Bitmap bmp = BitmapFactory.decodeByteArray(raw_data, 0, raw_data.length);
+//                    img.compress(Bitmap.CompressFormat.PNG, 100, byteBuffer);
+                    if (!printer.equals(printerName)) {
+                        showPrinterChangedAlertDialog(printer);
+                        if (printer.equals(printerName)) {
                             statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
                                     statusImageView.getHeight(), false));
                         } else {
@@ -173,15 +179,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
 
                     } else {
-                        Bitmap bmp = BitmapFactory.decodeByteArray(statusImg, 0, statusImg.length);
                         statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
                                 statusImageView.getHeight(), false));
                     }
                     statusEditText.setText(statusText);
+                    if (statusCode == 1) {
+                        statusEditText.setTextColor(Color.RED);
+                    } else {
+                        statusEditText.setTextColor(Color.BLACK);
+                    }
                     break;
                 case UpdateList:
-                    String printerList = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    String[] printers = printerList.split(":");
+                    JSONArray printers = msgObj.getJSONArray(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     addPrinter(printers);
                     break;
                 case UpdatePeriod:
@@ -207,11 +216,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public void addPrinter(String[] printers) {
-        for (String printer : printers) {
-            if (!printerList.contains(printer)) {
-                printerList.add(printer);
+    public void addPrinter(JSONArray printers) {
+        try {
+            if (isFirstList) {
+                for (int i = 0; i < printers.length(); i++) {
+                    printerList.add(printers.get(i).toString());
+                }
+                printerName=printerList.get(0);
+                printerNameView.setText(printerName);
+                isFirstList=false;
+            } else {
+                for (int i = 0; i < printers.length(); i++) {
+                    if (!printerList.contains(printers.get(i).toString())) {
+                        printerList.add(printers.get(i).toString());
+                    }
+                }
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -243,17 +265,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.BLACK);
     }
 
-    private void showPrinterChangedAlertDialog(String rcvdPrinterName) {
+    private void showPrinterChangedAlertDialog(final String rcvdPrinterName) {
         builder = new AlertDialog.Builder(this);
         builder.setIcon(R.drawable.alert_icon);
         builder.setTitle(R.string.attention);
         builder.setMessage(R.string.switch_printer);
+        final String rcvdPrinter = rcvdPrinterName;
 
         //监听下方button点击事件
         builder.setPositiveButton(R.string.postive_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                printerNameView.setText(printerName);
+                printerNameView.setText(rcvdPrinter);
+                printerName = rcvdPrinter;
                 dialogInterface.dismiss();
             }
         });

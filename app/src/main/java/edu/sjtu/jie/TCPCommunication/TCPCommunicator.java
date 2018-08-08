@@ -136,6 +136,9 @@ public class TCPCommunicator {
                     while(lenRead < byteLen) {
                         lenRead += in.read(buf, lenRead, byteLen - lenRead);
                     }
+                    Log.i(TAG, "received: " + new String(buf));
+                    for (TCPListener listener : allListeners)
+                            listener.onTCPMessageReceived(new String(buf));
 
 //                    int len = in.read(buf);
 //                    if (len != -1 && len == byteLen) {

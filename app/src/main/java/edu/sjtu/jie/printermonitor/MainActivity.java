@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static int S_PORT = 8010;
     private static ArrayList<String> printerList = new ArrayList<>();
     private int updatePeriod = 30;
+    private static final String TAG = "MainActivity";
 
     //声明组件
     private AlertDialog.Builder builder;
@@ -173,7 +174,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Bitmap bmp = BitmapFactory.decodeByteArray(raw_data, 0, raw_data.length);
 //                    img.compress(Bitmap.CompressFormat.PNG, 100, byteBuffer);
                     if (!printer.equals(printerName)) {
-                        showPrinterChangedAlertDialog(printer);
+                        Log.d(TAG, "onTCPMessageReceived: sender is not current printer");
+                        statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
+                                statusImageView.getHeight(), false));
+//                        showPrinterChangedAlertDialog(printer);
                         if (printer.equals(printerName)) {
                             statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
                                     statusImageView.getHeight(), false));

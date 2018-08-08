@@ -124,12 +124,27 @@ public class TCPCommunicator {
                 for (TCPListener listener : allListeners)
                     listener.onTCPConnectionStatusChanged(true);
                 while (true) {
-                    byte[] bufLen = new byte[1024];
-                    in.read(bufLen);
-                    String lenMsg=new String(bufLen);
-                    Log.i(TAG,"lenMsg~~~~~~~~~~~~~~~~~~~~~~~~~~~~"+lenMsg);
-                    int byteLen=Integer.parseInt(lenMsg.substring(0,lenMsg.indexOf("\n")));
+
+                    StringBuilder sLen = new StringBuilder();
+                    byte[]   bLen = new byte[1];
+                    String c = "";
+                    while( in.read(bLen, 0, 1) == 1){
+                        c = new String(bLen);
+                        if (c.equals("\n")) break;
+                        sLen.append(c);
+                    }
+                    int byteLen = Integer.parseInt(sLen.toString());
+
+//                    byte[] bufLen = new byte[1024];
+//                    in.read(bufLen);
+//                    String lenMsg=new String(bufLen);
+//                    Log.i(TAG,"lenMsg~~~~~~~~~~~~~~~~~~~~~~~~~~~~"+lenMsg);
+
+//                    int byteLen=Integer.parseInt(lenMsg.substring(0,lenMsg.indexOf("\n")));
                     Log.i(TAG,"byteLen------------------"+String.valueOf(byteLen));
+
+
+
                     byte[] buf = new byte[byteLen];
 
                     int lenRead = 0;
@@ -139,10 +154,14 @@ public class TCPCommunicator {
 
 //                    int len = in.read(buf);
 //                    if (len != -1 && len == byteLen) {
-//                        Log.i(TAG, "received: " + new String(buf));
+//
 //                        for (TCPListener listener : allListeners)
 //                            listener.onTCPMessageReceived(new String(buf));
 //                    }
+                    Log.i(TAG, "received: " + new String(buf));
+
+                    for (TCPListener listener : allListeners)
+                            listener.onTCPMessageReceived(new String(buf));
                 }
             } catch (UnknownHostException e) {
                 e.printStackTrace();

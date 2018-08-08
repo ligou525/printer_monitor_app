@@ -172,23 +172,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // 图像预处理
                     byte[] raw_data = Base64.decode(statusImg, Base64.DEFAULT);
                     Bitmap bmp = BitmapFactory.decodeByteArray(raw_data, 0, raw_data.length);
+                    this.statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
+                            statusImageView.getHeight(), false));
 //                    img.compress(Bitmap.CompressFormat.PNG, 100, byteBuffer);
-                    if (!printer.equals(printerName)) {
-                        Log.d(TAG, "onTCPMessageReceived: sender is not current printer");
-                        statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
-                                statusImageView.getHeight(), false));
+//                    if (!printer.equals(printerName)) {
+//                        Log.d(TAG, "onTCPMessageReceived: sender is not current printer");
 //                        showPrinterChangedAlertDialog(printer);
-                        if (printer.equals(printerName)) {
-                            statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
-                                    statusImageView.getHeight(), false));
-                        } else {
-                            showAlertDialog();
-                        }
-                    } else {
-                        statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
-                                statusImageView.getHeight(), false));
-                    }
-                    statusEditText.setText(statusText);
+//                        if (printer.equals(printerName)) {
+//                            this.statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
+//                                    statusImageView.getHeight(), false));
+//                        } else {
+//                            showAlertDialog();
+//                        }
+//                    } else {
+//                        statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
+//                                statusImageView.getHeight(), false));
+//                    }
+                    this.statusEditText.setText(statusText);
                     if (statusCode == 1) {
                         statusEditText.setTextColor(Color.RED);
                     } else {

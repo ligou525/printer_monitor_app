@@ -26,6 +26,7 @@ public class TCPCommunicator {
     private static Socket s;
     private static Handler UIHandler;
     private static Context appContext;
+    private static final String  TAG = "MainActivity";
 
     private TCPCommunicator() {
         allListeners = new ArrayList<TCPListener>();
@@ -117,7 +118,7 @@ public class TCPCommunicator {
         protected Void doInBackground(Void... params) {
             try {
                 s = new Socket(getServerHost(), getServerPort());
-                Log.i("initiate socket","ip:"+getServerHost()+", port: "+getServerPort()+", socket: "+s+"------------------");
+                Log.i(TAG,"Init socket: ip:"+getServerHost()+", port: "+getServerPort()+", socket: "+s+"------------------");
                 in = new DataInputStream(s.getInputStream());
                 out = new DataOutputStream(s.getOutputStream());
                 for (TCPListener listener : allListeners)
@@ -126,13 +127,13 @@ public class TCPCommunicator {
                     byte[] bufLen = new byte[1024];
                     in.read(bufLen);
                     String lenMsg=new String(bufLen);
-                    Log.i("lenMsg","~~~~~~~~~~~~~~~~~~~~~~~~~~~~"+lenMsg);
+                    Log.i(TAG,"lenMsg~~~~~~~~~~~~~~~~~~~~~~~~~~~~"+lenMsg);
                     int byteLen=Integer.parseInt(lenMsg.substring(0,lenMsg.indexOf("\n")));
-                    Log.i("byteLen","------------------"+String.valueOf(byteLen));
+                    Log.i(TAG,"byteLen------------------"+String.valueOf(byteLen));
                     byte[] buf = new byte[byteLen];
                     int len = in.read(buf);
                     if (len != -1 && len == byteLen) {
-                        Log.i("TcpClient", "received: " + new String(buf));
+                        Log.i(TAG, "received: " + new String(buf));
                         for (TCPListener listener : allListeners)
                             listener.onTCPMessageReceived(new String(buf));
                     }

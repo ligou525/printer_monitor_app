@@ -3,7 +3,7 @@ package edu.sjtu.jie.TCPCommunication;
 public class EnumsAndStatics {
     // 互发消息类型
     public enum MessageTypes {
-        PrinterStatus, UpdateList, Stop, Shutdown, UpdatePeriod, Online
+        PrinterStatus, UpdateList, Stop, Shutdown, UpdatePeriod, Online, Continue
     }
 
     // json对象子标签名
@@ -35,6 +35,8 @@ public class EnumsAndStatics {
             return MessageTypes.Shutdown;
         if (messageInString.equals(MessageTypes.UpdatePeriod.toString()))
             return MessageTypes.UpdatePeriod;
+        if (messageInString.equals(MessageTypes.Continue.toString()))
+            return MessageTypes.Continue;
         return null;
 
     }

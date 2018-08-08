@@ -114,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.iat_continue:
                 showAlertDialog();
+                TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Continue.toString(),
+                        "Stop printing",printerName), UIHandler, this);
                 break;
             case R.id.iat_stop:
                 TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Stop.toString(),
@@ -152,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onTCPMessageRecieved(String message) {
+    public void onTCPMessageReceived(String message) {
         JSONObject msgObj;
         try {
             msgObj = new JSONObject(message);
@@ -177,7 +179,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         } else {
                             showAlertDialog();
                         }
-
                     } else {
                         statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
                                 statusImageView.getHeight(), false));
@@ -194,7 +195,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     addPrinter(printers);
                     break;
                 case UpdatePeriod:
-
+                    String rcvdUpdatePeriod= msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
+                    statusEditText.append("\n\n处理结果：" + rcvdUpdatePeriod);
+                    break;
                 case Stop:
                     String rcvdMsgStop = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     statusEditText.append("\n\n处理结果：" + rcvdMsgStop);
@@ -202,6 +205,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case Shutdown:
                     String rcvdMsgOff = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     statusEditText.append("\n\n处理结果：" + rcvdMsgOff);
+                    break;
+                case Continue:
+                    String rcvdMsgContinue= msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
+                    statusEditText.append("\n\n处理结果：" + rcvdMsgContinue);
                     break;
             }
 

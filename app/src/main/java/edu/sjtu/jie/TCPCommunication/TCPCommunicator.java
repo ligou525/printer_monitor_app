@@ -3,8 +3,6 @@ package edu.sjtu.jie.TCPCommunication;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -136,7 +134,7 @@ public class TCPCommunicator {
                     if (len != -1 && len == byteLen) {
                         Log.i("TcpClient", "received: " + new String(buf));
                         for (TCPListener listener : allListeners)
-                            listener.onTCPMessageRecieved(new String(buf));
+                            listener.onTCPMessageReceived(new String(buf));
                     }
                 }
             } catch (UnknownHostException e) {

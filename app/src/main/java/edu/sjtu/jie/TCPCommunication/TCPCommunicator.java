@@ -131,12 +131,18 @@ public class TCPCommunicator {
                     int byteLen=Integer.parseInt(lenMsg.substring(0,lenMsg.indexOf("\n")));
                     Log.i(TAG,"byteLen------------------"+String.valueOf(byteLen));
                     byte[] buf = new byte[byteLen];
-                    int len = in.read(buf);
-                    if (len != -1 && len == byteLen) {
-                        Log.i(TAG, "received: " + new String(buf));
-                        for (TCPListener listener : allListeners)
-                            listener.onTCPMessageReceived(new String(buf));
+
+                    int lenRead = 0;
+                    while(lenRead < byteLen) {
+                        lenRead += in.read(buf, lenRead, byteLen - lenRead);
                     }
+
+//                    int len = in.read(buf);
+//                    if (len != -1 && len == byteLen) {
+//                        Log.i(TAG, "received: " + new String(buf));
+//                        for (TCPListener listener : allListeners)
+//                            listener.onTCPMessageReceived(new String(buf));
+//                    }
                 }
             } catch (UnknownHostException e) {
                 e.printStackTrace();

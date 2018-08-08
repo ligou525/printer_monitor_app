@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static int S_PORT = 8010;
     private static ArrayList<String> printerList = new ArrayList<>();
     private int updatePeriod = 30;
-    private boolean isFirstList = true;
 
     //声明组件
     private AlertDialog.Builder builder;
@@ -52,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initLayout();
-//        initPrinterList();
+        initPrinterList();
         ConnectToServer();
         try {
             Thread.sleep(100);
@@ -64,9 +63,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void initPrinterList() {
-        String[] printerNameList = new String[]{"printer1", "printer2", "printer3", "printer4"};
-        for (String printer : printerNameList) {
-            printerList.add(printer);
+        if(printerList.isEmpty()){
+            String[] printerNameList = new String[]{"printer1"};
+            for (String printer : printerNameList) {
+                printerList.add(printer);
+            }
         }
     }
 
@@ -115,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.iat_continue:
                 showAlertDialog();
                 TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Continue.toString(),
-                        "Stop printing",printerName), UIHandler, this);
+                        "continue printing",printerName), UIHandler, this);
                 break;
             case R.id.iat_stop:
                 TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.Stop.toString(),
@@ -225,18 +226,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void addPrinter(JSONArray printers) {
         try {
-            if (isFirstList) {
-                for (int i = 0; i < printers.length(); i++) {
+            for (int i = 0; i < printers.length(); i++) {
+                if (!printerList.contains(printers.get(i).toString())) {
                     printerList.add(printers.get(i).toString());
-                }
-                printerName=printerList.get(0);
-                printerNameView.setText(printerName);
-                isFirstList=false;
-            } else {
-                for (int i = 0; i < printers.length(); i++) {
-                    if (!printerList.contains(printers.get(i).toString())) {
-                        printerList.add(printers.get(i).toString());
-                    }
                 }
             }
         } catch (JSONException e) {

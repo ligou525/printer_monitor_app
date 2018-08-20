@@ -43,8 +43,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //声明组件
     private AlertDialog.Builder builder;
     private TextView printerNameView;
-    private ImageView statusImageView;
-    private EditText statusEditText;
+    private static ImageView statusImageView;
+    private static EditText statusEditText;
     private Handler UIHandler = new Handler();
 
     @Override
@@ -89,8 +89,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     * */
     public void initLayout() {
         printerNameView = (TextView) findViewById(R.id.printer_name);
-        statusImageView = (ImageView) findViewById(R.id.print_status_img);
-        statusEditText = (EditText) findViewById(R.id.iat_text);
+        MainActivity.statusImageView = (ImageView) findViewById(R.id.print_status_img);
+        MainActivity.statusEditText = (EditText) findViewById(R.id.iat_text);
         printerName = printerNameView.getText().toString();
         findViewById(R.id.image_iat_set).setOnClickListener(MainActivity.this);
         findViewById(R.id.printer_name).setOnClickListener(MainActivity.this);
@@ -165,15 +165,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     getString(EnumsAndStatics.MESSAGE_TYPE_FOR_JSON));
             switch (msgType) {
                 case PrinterStatus:
+                    Log.d(TAG, "onTCPMessageReceived: PrinterStatus is changed");
                     JSONObject msgContent = msgObj.getJSONObject(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     String statusImg = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_IMG_FOR_JSON);
-                    String statusText = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_TEXT_FOR_JSON);
+                    final String statusText = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_TEXT_FOR_JSON);
                     int statusCode = msgContent.getInt(EnumsAndStatics.MESSAGE_STATUS_CODE);
                     // 图像预处理
                     byte[] raw_data = Base64.decode(statusImg, Base64.DEFAULT);
-                    Bitmap bmp = BitmapFactory.decodeByteArray(raw_data, 0, raw_data.length);
-                    this.statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
-                            statusImageView.getHeight(), false));
+                    final Bitmap bmp = BitmapFactory.decodeByteArray(raw_data, 0, raw_data.length);
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            MainActivity.statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
+                                    statusImageView.getHeight(), false));
+                            MainActivity.statusEditText.setText(statusText);
+                        }
+                    });
+
 //                    img.compress(Bitmap.CompressFormat.PNG, 100, byteBuffer);
 //                    if (!printer.equals(printerName)) {
 //                        Log.d(TAG, "onTCPMessageReceived: sender is not current printer");
@@ -188,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                        statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
 //                                statusImageView.getHeight(), false));
 //                    }
-                    this.statusEditText.setText(statusText);
+
                     if (statusCode == 1) {
                         statusEditText.setTextColor(Color.RED);
                     } else {

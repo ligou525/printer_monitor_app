@@ -1,6 +1,10 @@
 package edu.sjtu.jie.printermonitor;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -10,6 +14,8 @@ import android.util.Log;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import java.util.prefs.Preferences;
 
 import edu.sjtu.jie.TCPCommunication.EnumsAndStatics;
 import edu.sjtu.jie.util.SettingTextWatcher;
@@ -32,6 +38,7 @@ public class PrinterSettings extends PreferenceActivity implements OnPreferenceC
 
         timePeriodPreference = (EditTextPreference) findPreference("printer_time_period_preference");
 
+
         int updatePeriod = getIntent().getIntExtra("updatePeriod", 30);
         timePeriodPreference.setSummary("当前更新时间间隔： " + updatePeriod + "s");
 
@@ -40,19 +47,37 @@ public class PrinterSettings extends PreferenceActivity implements OnPreferenceC
 
         timePeriodPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                int newPeriodValue = Integer.parseInt(timePeriodPreference.getText());
-                Log.d("onPreferenceChange","newPeriod: "+newPeriodValue);
-                timePeriodPreference.setSummary("当前更新时间间隔： " + newPeriodValue + "s");
-                returnToMain(newPeriodValue);
+            public boolean onPreferenceChange(final Preference preference, final Object o) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(PrinterSettings.this);
+                Dialog changeUpdatePeriodConfirmationDialog = builder
+                        .setCancelable(true)
+//                        .setTitle("Change Setting")
+                        .setMessage("确定要更改时间间隔参数吗")
+                        .setPositiveButton(R.string.postive_button, new Dialog.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                //Because I return false anyway, I change the preference manually here
+                                int newPeriodValue=0;
+                                if(timePeriodPreference.getText() != null){
+                                    newPeriodValue = Integer.parseInt(timePeriodPreference.getText());
+                                }
+                                timePeriodPreference.setSummary("当前更新时间间隔： " + newPeriodValue + "s");
+                                returnToMain(newPeriodValue);
+                            }
+                        }).setNegativeButton(R.string.negative_button, null)
+                        .create();
+                changeUpdatePeriodConfirmationDialog.show();
                 return true;
+
             }
         });
 
     }
 
     public void returnToMain(int newPeriodValue) {
-//        Toast.makeText(this,"setting - 最新period值："+String.valueOf(newPeriodValue),Toast.LENGTH_LONG).show();
         Intent periodIntent = new Intent(PrinterSettings.this, MainActivity.class);
         periodIntent.putExtra("updateperiod", newPeriodValue);
         this.setResult(EnumsAndStatics.PERIOD_RESULT_CODE, periodIntent);

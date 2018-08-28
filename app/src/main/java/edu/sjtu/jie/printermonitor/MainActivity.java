@@ -22,7 +22,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import edu.sjtu.jie.TCPCommunication.EnumsAndStatics;
@@ -44,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private AlertDialog.Builder builder;
     private TextView printerNameView;
     private static ImageView statusImageView;
-    private static EditText statusEditText;
+    private static TextView statusTextView;
     private Handler UIHandler = new Handler();
 
     @Override
@@ -90,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void initLayout() {
         printerNameView = (TextView) findViewById(R.id.printer_name);
         MainActivity.statusImageView = (ImageView) findViewById(R.id.print_status_img);
-        MainActivity.statusEditText = (EditText) findViewById(R.id.iat_text);
+        MainActivity.statusTextView = (TextView) findViewById(R.id.iat_text);
         printerName = printerNameView.getText().toString();
         findViewById(R.id.image_iat_set).setOnClickListener(MainActivity.this);
         findViewById(R.id.printer_name).setOnClickListener(MainActivity.this);
@@ -181,11 +180,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         public void run() {
                             MainActivity.statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
                                     statusImageView.getHeight(), false));
-                            MainActivity.statusEditText.setText(statusText);
+                            MainActivity.statusTextView.setText(statusText);
                             if (statusCode == 1) {
-                                statusEditText.setTextColor(Color.RED);
+                                statusTextView.setTextColor(Color.RED);
                             } else {
-                                statusEditText.setTextColor(Color.BLACK);
+                                statusTextView.setTextColor(Color.BLACK);
                             }
                         }
                     });
@@ -197,19 +196,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 case UpdatePeriod:
                     String rcvdUpdatePeriod= msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    statusEditText.append("\n\n处理结果：" + rcvdUpdatePeriod);
+                    statusTextView.append("\n\n处理结果：" + rcvdUpdatePeriod);
                     break;
                 case Stop:
                     String rcvdMsgStop = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    statusEditText.append("\n\n处理结果：" + rcvdMsgStop);
+                    statusTextView.append("\n\n处理结果：" + rcvdMsgStop);
                     break;
                 case Shutdown:
                     String rcvdMsgOff = msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    statusEditText.append("\n\n处理结果：" + rcvdMsgOff);
+                    statusTextView.append("\n\n处理结果：" + rcvdMsgOff);
                     break;
                 case Continue:
                     String rcvdMsgContinue= msgObj.getString(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
-                    statusEditText.append("\n\n处理结果：" + rcvdMsgContinue);
+                    statusTextView.append("\n\n处理结果：" + rcvdMsgContinue);
                     break;
             }
 

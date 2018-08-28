@@ -151,7 +151,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             printerNameView.setText(printerName);
         } else if (requestCode == EnumsAndStatics.PERIOD_REQUEST_CODE && resultCode == EnumsAndStatics.PERIOD_RESULT_CODE) {
             updatePeriod = data.getIntExtra("updateperiod", 30);
-            Toast.makeText(this, "main - 最新period值：" + String.valueOf(updatePeriod), Toast.LENGTH_LONG).show();
+            TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.UpdatePeriod.toString(),
+                    String.valueOf(updatePeriod),printerName), UIHandler, this);
+            Toast.makeText(this, "new period sent：" + String.valueOf(updatePeriod), Toast.LENGTH_LONG).show();
+
         }
     }
 
@@ -169,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     JSONObject msgContent = msgObj.getJSONObject(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
                     String statusImg = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_IMG_FOR_JSON);
                     final String statusText = msgContent.getString(EnumsAndStatics.MESSAGE_STATUS_TEXT_FOR_JSON);
-                    int statusCode = msgContent.getInt(EnumsAndStatics.MESSAGE_STATUS_CODE);
+                    final int statusCode = msgContent.getInt(EnumsAndStatics.MESSAGE_STATUS_CODE);
                     // 图像预处理
                     byte[] raw_data = Base64.decode(statusImg, Base64.DEFAULT);
                     final Bitmap bmp = BitmapFactory.decodeByteArray(raw_data, 0, raw_data.length);
@@ -179,29 +182,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             MainActivity.statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
                                     statusImageView.getHeight(), false));
                             MainActivity.statusEditText.setText(statusText);
+                            if (statusCode == 1) {
+                                statusEditText.setTextColor(Color.RED);
+                            } else {
+                                statusEditText.setTextColor(Color.BLACK);
+                            }
                         }
                     });
 
-//                    img.compress(Bitmap.CompressFormat.PNG, 100, byteBuffer);
-//                    if (!printer.equals(printerName)) {
-//                        Log.d(TAG, "onTCPMessageReceived: sender is not current printer");
-//                        showPrinterChangedAlertDialog(printer);
-//                        if (printer.equals(printerName)) {
-//                            this.statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
-//                                    statusImageView.getHeight(), false));
-//                        } else {
-//                            showAlertDialog();
-//                        }
-//                    } else {
-//                        statusImageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, statusImageView.getWidth(),
-//                                statusImageView.getHeight(), false));
-//                    }
-
-                    if (statusCode == 1) {
-                        statusEditText.setTextColor(Color.RED);
-                    } else {
-                        statusEditText.setTextColor(Color.BLACK);
-                    }
                     break;
                 case UpdateList:
                     JSONArray printers = msgObj.getJSONArray(EnumsAndStatics.MESSAGE_CONTENT_FOR_JSON);
@@ -307,36 +295,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.BLACK);
     }
 
-//    private void setUpdatePeriodDialog(View view) {
-//        builder=new AlertDialog.Builder(this);
-//        builder.setIcon(R.mipmap.ic_launcher);
-//        builder.setTitle(R.string.periodDialogTitle);
-//
-//        LinearLayout loginDialog= (LinearLayout) getLayoutInflater().inflate(R.layout.set_update_period_view,null);
-//        builder.setView(loginDialog);
-//
-//        builder.setCancelable(false);
-//        AlertDialog dialog=builder.create();
-//
-//        final EditText periodEditText=(EditText) findViewById(R.id.period_editText);
-//        Button confirmButthon=(Button) findViewById(R.id.period_comfirm);
-//        Button cancelButthon=(Button) findViewById(R.id.period_cancel);
-//        periodEditText.addTextChangedListener(new SettingTextWatcher(MainActivity.this, periodEditText,0,1000));
-//        confirmButthon.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if(periodEditText.getText().equals("")){
-//                    Toast.makeText(MainActivity.this,"时间间隔不能为空，请重新输入！",Toast.LENGTH_LONG);
-//                }else{
-//                    if(updatePeriod!=Integer.parseInt(periodEditText.getText().toString())) {
-//                        updatePeriod = Integer.parseInt(periodEditText.getText().toString());
-//                        TCPCommunicator.writeToSocket(messageBuilder(EnumsAndStatics.MessageTypes.MessageUpdatePeriod.toString(),
-//                                String.valueOf(updatePeriod)), UIHandler, MainActivity.this);
-//                    }
-//                }
-//            }
-//        });
-//
-//        dialog.show();
-//    }
 }

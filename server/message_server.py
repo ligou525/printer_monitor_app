@@ -18,28 +18,28 @@ class TCPHandler(socketserver.StreamRequestHandler):
     def handle(self):
         try:
             msg = recv(self.request)
+            print(msg)
         except:
             return 
 
-        if msg['messageType'] == 'Online':
+        if msg['messageType'].lower() == 'online':
             name = msg['sender']
             self.server.add_client(name, self.request)
             if name.startswith('app'):
-                response = message_builder('server', name, 'UpdatePrinterList', self.server.printers)
-                self.server.send_mgs(response)
+                response = message_builder('server', name, 'UpdateList', list(self.server.printers))
+                self.server.send_msg(response)
         
         while 1:
             try:
                 msg = recv(self.request)
-                print("{0} - recevied message".format(strftime('%c')))
+                print("{0} - recevied message (first 500 chars): {1}".format(strftime('%c'), str(msg)[:200]))
             except:
                 break
                     
             if msg['recver'] == 'server':
-                if msg['messageType'] == 'Test':
+                if msg['messageType'].lower() == 'test':
                     response = message_builder('server', name, 'Test', 'test - {0}'.format(strftime('%c')))
                     self.server.send_msg(response)
-
             else:
                 self.server.send_msg(msg)
 
@@ -86,8 +86,11 @@ class Server(socketserver.ThreadingTCPServer):
     def send_msg(self, msg):
         with self.lock:
             recver = msg['recver'] 
-            if recver.startswith('app') and recver in self.apps:
-                send(self.apps[recver], msg)
+            if recver.startswith('app'): #TODO
+                try:
+                    send(list(self.apps.values())[0], msg)
+                except:
+                    print('Message not sent !!! not online')
             elif recver.startswith('printer') and recver in self.printers:
                 send(self.printers[recver], msg)
 
